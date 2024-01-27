@@ -1,6 +1,7 @@
 package com.abdullah996.rest.webservices.restfulwebservices.exception
 
 import com.abdullah996.rest.webservices.restfulwebservices.users.UserNotFoundException
+import com.abdullah996.rest.webservices.restfulwebservices.users.posts.PostNotFoundException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -35,6 +36,16 @@ class CustomizedResponseEntityExceptionHandler : ResponseEntityExceptionHandler(
         val errorDetails = ErrorDetails(
             LocalDateTime.now(),
             ex.message?:"User Not Found", request.getDescription(false)
+        )
+
+        return ResponseEntity(errorDetails, HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(PostNotFoundException::class)
+    fun handlePostNotFoundException(ex: Exception, request: WebRequest): ResponseEntity<ErrorDetails> {
+        val errorDetails = ErrorDetails(
+            LocalDateTime.now(),
+            ex.message?:"Post Not Found", request.getDescription(false)
         )
 
         return ResponseEntity(errorDetails, HttpStatus.NOT_FOUND)
