@@ -3,6 +3,8 @@ package com.abdullah996.rest.webservices.restfulwebservices.users
 import jakarta.servlet.Servlet
 import jakarta.validation.Valid
 import org.springframework.boot.origin.TextResourceOrigin.Location
+import org.springframework.hateoas.EntityModel
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
 import org.springframework.validation.annotation.Validated
@@ -28,9 +30,11 @@ class UsersControllers constructor(private val userDaoService: UserDaoService) {
     }
 
     @GetMapping("/users/{id}")
-    fun retrieveUser(@PathVariable id: Int): User? {
+    fun retrieveUser(@PathVariable id: Int): EntityModel<User?> {
         val user = userDaoService.getUser(id) ?: throw UserNotFoundException("id:$id")
-        return user
+        val entityModel=EntityModel.of(user)
+        entityModel.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsersControllers::class.java).retrieveAllUsers()).withRel("all-users"))
+        return entityModel
     }
 
     @DeleteMapping("/users/{id}")
