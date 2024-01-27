@@ -21,31 +21,35 @@ import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 @RestController
 @Validated
-class UsersControllers constructor(private val userDaoService: UserDaoService) {
+class UsersControllers constructor(private val userRepository: UserRepository) {
 
 
     @GetMapping("/users")
     fun retrieveAllUsers(): List<User> {
-        return userDaoService.findAllUsers()
+        return userRepository.findAll()
     }
 
     @GetMapping("/users/{id}")
     fun retrieveUser(@PathVariable id: Int): EntityModel<User?> {
-        val user = userDaoService.getUser(id) ?: throw UserNotFoundException("id:$id")
-        val entityModel=EntityModel.of(user)
+        val user = userRepository.findById(id)
+        if (user.isEmpty){
+            throw UserNotFoundException("id=$id")
+        }
+
+        val entityModel=EntityModel.of(user.get())
         entityModel.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsersControllers::class.java).retrieveAllUsers()).withRel("all-users"))
         return entityModel
     }
 
     @DeleteMapping("/users/{id}")
     fun deleteUser(@PathVariable id: Int) {
-        userDaoService.deleteById(id)
+        userRepository.deleteById(id)
     }
 
     @PostMapping("/users")
     fun retrieveAllUsers(@Valid @RequestBody user: User,bindingResult: BindingResult): ResponseEntity<Any> {
 
-        val id = userDaoService.addUser(user)
+        val id = userRepository.save(user)
         val location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id).toUri()
         return ResponseEntity.created(location).build()
     }
